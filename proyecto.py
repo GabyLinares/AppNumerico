@@ -70,6 +70,12 @@ def mostrar_ventana_metodo():
     window_metodo = Tk()
     window_metodo.title("Seleccion de metodo")
 
+    titulo_label = Label(window_metodo, text="PROYECTO FINAL ANÁLISIS NUMÉRICO", font=("Arial", 16))
+    titulo_label.pack(pady=10)
+
+    autores_label = Label(window_metodo, text="Gabriela Linares y Henry Velandia", font=("Arial", 12))
+    autores_label.pack(pady=10)
+
     metodo = tk.IntVar()
     metodo.set(1)
 
