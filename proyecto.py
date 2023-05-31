@@ -1,8 +1,5 @@
-# PROYECTO FINAL ANALISIS NUMÃ‰RICO
-# Gabriela Linares y Henry Velandia
-
 import tkinter as tk
-from tkinter import Tk, Frame, Label, Entry, Radiobutton, Button
+from tkinter import Tk, Frame, Label, Entry, Radiobutton, Button, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
@@ -82,7 +79,6 @@ def sol_transitoria(longitud, t_total, num_nodos_espacio, num_nodos_tiempo, mcon
 
     return temps
 
-
 # Función para mostrar la gráfica de la solución
 def mostrar_grafica(x, longitud, window):
     fig = plt.figure()
@@ -94,8 +90,6 @@ def mostrar_grafica(x, longitud, window):
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
     canvas.get_tk_widget().pack()
-
-
 
 # Función para mostrar la ventana de selección del método
 def mostrar_ventana_metodo():
@@ -123,6 +117,7 @@ def mostrar_ventana_metodo():
     button_siguiente = Button(window_metodo, text="Siguiente", command=lambda: mostrar_ventana_inputs(metodo.get(), window_metodo))
     button_siguiente.pack(pady=10)
 
+
     window_metodo.mainloop()
 
 # Función para mostrar la ventana de ingreso de inputs según el método seleccionado
@@ -131,6 +126,10 @@ def mostrar_ventana_inputs(metodo, window_metodo):
 
     window_inputs = Tk()
     window_inputs.title("Ingreso de inputs")
+
+    def volver():
+        window_inputs.destroy()
+        mostrar_ventana_metodo()
 
     inputs_frame = Frame(window_inputs)
     inputs_frame.pack(pady=10)
@@ -162,6 +161,9 @@ def mostrar_ventana_inputs(metodo, window_metodo):
 
         button_resolver = Button(window_inputs, text="Resolver ecuacion", command=lambda: resolver_ecuacion_estacionaria(float(longitud_entry.get()), int(num_nodos_espacio_entry.get()), float(mconst_entry.get()), float(temp_contorno_entry.get()), window_inputs))
         button_resolver.pack(pady=10)
+
+        button_volver = Button(window_inputs, text="Volver", command=volver)
+        button_volver.pack(pady=10)
 
     elif metodo == 2:
         longitud_label = Label(inputs_frame, text="Longitud de la superficie de difusion:")
@@ -209,6 +211,9 @@ def mostrar_ventana_inputs(metodo, window_metodo):
         button_resolver = Button(window_inputs, text="Resolver ecuacion", command=lambda: resolver_ecuacion_transitoria(float(longitud_entry.get()), float(t_total_entry.get()), int(num_nodos_espacio_entry.get()), int(num_nodos_tiempo_entry.get()), float(mconst_entry.get()), float(temp_contorno_entry.get()), float(temp_inicial_entry.get()), window_inputs))
         button_resolver.pack(pady=10)
 
+        button_volver = Button(window_inputs, text="Volver", command=volver)
+        button_volver.pack(pady=10)
+
     window_inputs.mainloop()
 
 # Función para resolver la ecuación de estado estacionario
@@ -232,7 +237,4 @@ mostrar_ventana_metodo()
 # Nodos espacio = 10
 # Nodos t = 5
 # alpha = 0.01
-# Temp contorno = 90
-# Temp inicial = 20
-
-# L/h = nodos
+# Temp
