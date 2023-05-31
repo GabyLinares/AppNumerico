@@ -7,11 +7,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Función para reemplazar la diagonal de una matriz con una lista de valores
 def replaceDiagonal(matrix, replacementList):
     for i in range(len(replacementList)):
         matrix[i][i + 1] = replacementList[i]
 
-
+# Función para generar una matriz cuadrada con ciertos valores en la diagonal
 def generar_matriz_cuadrada(j, betas):
     matriz = np.zeros((j, j))
     np.fill_diagonal(matriz, betas)
@@ -26,7 +27,7 @@ def generar_matriz_cuadrada(j, betas):
 
     return matriz
 
-
+# Método de Jacobi para resolver un sistema de ecuaciones lineales
 def jacobi(A, B, error):
     n = len(B)
     x = np.zeros(n)
@@ -44,9 +45,9 @@ def jacobi(A, B, error):
 
     return x
 
-
+# Solución para el caso de estado estacionario
 def sol_estacionaria(longitud, num_nodos_espacio, mconst, temp_contorno):
-    delta_x = longitud / (num_nodos_espacio - 1)
+    delta_x = longitud / num_nodos_espacio
     betas = -2 - mconst**2 * delta_x**2
     A = generar_matriz_cuadrada(num_nodos_espacio, betas)
     B = np.zeros((num_nodos_espacio, 1))
@@ -54,6 +55,35 @@ def sol_estacionaria(longitud, num_nodos_espacio, mconst, temp_contorno):
     x = jacobi(A, B, 0.0001)
     return x
 
+def sol_transitoria(longitud, t_total, num_nodos_espacio, num_nodos_tiempo, mconst, temp_contorno, temp_inicial):
+    delta_x = longitud / num_nodos_espacio
+    delta_t = t_total / num_nodos_tiempo
+
+    temps = np.zeros((num_nodos_tiempo, num_nodos_espacio))
+    A = np.zeros((num_nodos_espacio, num_nodos_espacio))
+    temps[:, 0] = temp_contorno
+    temps[0, 1:] = temp_inicial
+    A[0, 0] = 1
+
+    beta1 = (-delta_t) / (delta_x**2)
+    beta2 = 2 * (delta_t / (delta_x**2)) + ((mconst**2) * delta_t) + 1
+
+    for j in range(1, num_nodos_espacio - 1):
+        A[j, j - 1] = beta1
+        A[j, j] = beta2
+        A[j, j + 1] = beta1
+
+    A[num_nodos_espacio - 1, num_nodos_espacio - 2] = 2 * beta1
+    A[num_nodos_espacio - 1, num_nodos_espacio - 1] = beta2
+
+    for i in range(1, num_nodos_tiempo):
+        x = jacobi(A, temps[i - 1, :].T, 0.0001)
+        temps[i, :] = x
+
+    return temps
+
+
+# Función para mostrar la gráfica de la solución
 def mostrar_grafica(x, longitud, window):
     fig = plt.figure()
     plt.plot(np.linspace(0, longitud, len(x)), x)
@@ -64,8 +94,10 @@ def mostrar_grafica(x, longitud, window):
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
     canvas.get_tk_widget().pack()
-    plt.show()
 
+
+
+# Función para mostrar la ventana de selección del método
 def mostrar_ventana_metodo():
     window_metodo = Tk()
     window_metodo.title("Seleccion de metodo")
@@ -93,6 +125,7 @@ def mostrar_ventana_metodo():
 
     window_metodo.mainloop()
 
+# Función para mostrar la ventana de ingreso de inputs según el método seleccionado
 def mostrar_ventana_inputs(metodo, window_metodo):
     window_metodo.destroy()
 
@@ -129,6 +162,7 @@ def mostrar_ventana_inputs(metodo, window_metodo):
 
         button_resolver = Button(window_inputs, text="Resolver ecuacion", command=lambda: resolver_ecuacion_estacionaria(float(longitud_entry.get()), int(num_nodos_espacio_entry.get()), float(mconst_entry.get()), float(temp_contorno_entry.get()), window_inputs))
         button_resolver.pack(pady=10)
+
     elif metodo == 2:
         longitud_label = Label(inputs_frame, text="Longitud de la superficie de difusion:")
         longitud_label.pack()
@@ -175,23 +209,20 @@ def mostrar_ventana_inputs(metodo, window_metodo):
         button_resolver = Button(window_inputs, text="Resolver ecuacion", command=lambda: resolver_ecuacion_transitoria(float(longitud_entry.get()), float(t_total_entry.get()), int(num_nodos_espacio_entry.get()), int(num_nodos_tiempo_entry.get()), float(mconst_entry.get()), float(temp_contorno_entry.get()), float(temp_inicial_entry.get()), window_inputs))
         button_resolver.pack(pady=10)
 
-    button_volver = Button(window_inputs, text="Volver", command=lambda: volver(window_metodo, window_inputs))
-    button_volver.pack()
-
     window_inputs.mainloop()
 
-def resolver_ecuacion_estacionaria(longitud, num_nodos_espacio, mconst, temp_contorno, window_inputs):
+# Función para resolver la ecuación de estado estacionario
+def resolver_ecuacion_estacionaria(longitud, num_nodos_espacio, mconst, temp_contorno, window):
     x = sol_estacionaria(longitud, num_nodos_espacio, mconst, temp_contorno)
-    mostrar_grafica(x, longitud, window_inputs)
+    mostrar_grafica(x, longitud, window)
 
-def resolver_ecuacion_transitoria(longitud, t_total, num_nodos_espacio, num_nodos_tiempo, mconst, temp_contorno, temp_inicial, window_inputs):
-    # Implementar la resolución de la ecuación para el estado transitorio
-    pass
+# Función para resolver la ecuación de estado transitorio
+def resolver_ecuacion_transitoria(longitud, t_total, num_nodos_espacio, num_nodos_tiempo, mconst, temp_contorno, temp_inicial, window):
+    x = sol_transitoria(longitud, t_total, num_nodos_espacio, num_nodos_tiempo, mconst, temp_contorno, temp_inicial)
+    mostrar_grafica(x, longitud, window)
 
-def volver(window_metodo, window_inputs):
-    window_inputs.destroy()
-    mostrar_ventana_metodo()
 
+# Mostrar la ventana de selección del método
 mostrar_ventana_metodo()
 
 # DATOS A USAR
